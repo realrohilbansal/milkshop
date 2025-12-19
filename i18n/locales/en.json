@@ -1,0 +1,10 @@
+{
+  "dashboard": {
+    "title": "Welcome to Milk App",
+    "subtitle": "Dashboard",
+    "orders": "Orders",
+    "customers": "Customers",
+    "products": "Products",
+    "buyfromus": "Buy From Us"
+  }
+}

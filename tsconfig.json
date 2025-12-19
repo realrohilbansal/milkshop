@@ -1,15 +1,4 @@
 {
-  "extends": "expo/tsconfig.base",
-  "compilerOptions": {
-    "strict": true,
-    "paths": {
-      "@/*": [
-        "./*"
-      ]
-    }
-  },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx"
-, "app/_layout.jsx", "app/(dashboard)/profile.jsx", "app/(auth)/login.jsx", "app/(auth)/verifyOtp.jsx"  ]
+  "compilerOptions": {},
+  "extends": "expo/tsconfig.base"
 }

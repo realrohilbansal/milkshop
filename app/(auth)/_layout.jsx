@@ -1,3 +1,4 @@
+// app/(auth)/_layout.jsx
 import { Stack } from "expo-router"
 import { StatusBar } from "react-native"
 
