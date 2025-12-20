@@ -1,0 +1,1 @@
+appwrite functions update --function-id "entitlements-guard-629" --name "entitlements-guard" --execute "users"

@@ -1,0 +1,527 @@
+{
+    "projectId": "691d95c80038b15872d6",
+    "endpoint": "https://fra.cloud.appwrite.io/v1",
+    "projectName": "Milkshop",
+    "settings": {
+        "services": {
+            "account": true,
+            "avatars": true,
+            "databases": true,
+            "locale": true,
+            "health": true,
+            "storage": true,
+            "teams": true,
+            "users": true,
+            "sites": true,
+            "functions": true,
+            "graphql": true,
+            "messaging": true
+        },
+        "auth": {
+            "methods": {
+                "jwt": true,
+                "phone": true,
+                "invites": true,
+                "anonymous": true,
+                "email-otp": true,
+                "magic-url": true,
+                "email-password": true
+            },
+            "security": {
+                "duration": 31536000,
+                "limit": 0,
+                "sessionsLimit": 10,
+                "passwordHistory": 0,
+                "passwordDictionary": false,
+                "personalDataCheck": false,
+                "sessionAlerts": false,
+                "mockNumbers": [
+                    {
+                        "phone": "+919999999999",
+                        "otp": "111111"
+                    }
+                ]
+            }
+        }
+    },
+    "functions": [
+        {
+            "$id": "entitlements-guard-629",
+            "execute": [],
+            "name": "entitlements-guard",
+            "enabled": true,
+            "logging": true,
+            "runtime": "node-18.0",
+            "scopes": [],
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "entrypoint": "index.js",
+            "commands": "npm install && npm run build",
+            "specification": "s-0.5vcpu-512mb",
+            "path": "appwrite-functions/entitlements-guard"
+        },
+        {
+            "$id": "apply-entitlements-629",
+            "execute": [],
+            "name": "apply-entitlements",
+            "enabled": true,
+            "logging": true,
+            "runtime": "node-18.0",
+            "scopes": [],
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "entrypoint": "index.js",
+            "commands": "npm install && npm run build",
+            "specification": "s-0.5vcpu-512mb",
+            "path": "appwrite-functions/apply-entitlements"
+        },
+        {
+            "$id": "bootstrap-user-629",
+            "execute": [],
+            "name": "bootstrap-user",
+            "enabled": true,
+            "logging": true,
+            "runtime": "node-18.0",
+            "scopes": [],
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "entrypoint": "index.js",
+            "commands": "npm install && npm run build",
+            "specification": "s-0.5vcpu-512mb",
+            "path": "appwrite-functions/bootstrap-user"
+        }
+    ],
+    "tablesDB": [
+        {
+            "$id": "milkapp_milkoo_629",
+            "name": "Milk App",
+            "enabled": true
+        }
+    ],
+    "tables": [
+        {
+            "$id": "orders_collection_629",
+            "$permissions": [
+                "create(\"users\")",
+                "read(\"users\")",
+                "update(\"users\")",
+                "delete(\"users\")"
+            ],
+            "databaseId": "milkapp_milkoo_629",
+            "name": "Orders",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "qty",
+                    "type": "double",
+                    "required": true,
+                    "array": false,
+                    "min": 0,
+                    "max": 1.7976931348623157e+308,
+                    "default": null
+                },
+                {
+                    "key": "dateOfPurchase",
+                    "type": "datetime",
+                    "required": false,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                },
+                {
+                    "key": "customerId",
+                    "type": "relationship",
+                    "required": false,
+                    "array": false,
+                    "relatedTable": "customers_collection_629",
+                    "relationType": "manyToOne",
+                    "twoWay": false,
+                    "twoWayKey": "693bd0610000fef40901",
+                    "onDelete": "cascade",
+                    "side": "parent"
+                },
+                {
+                    "key": "ownerId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 20,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "customerName",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 32,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "productId",
+                    "type": "relationship",
+                    "required": false,
+                    "array": false,
+                    "relatedTable": "products_collection_629",
+                    "relationType": "manyToOne",
+                    "twoWay": false,
+                    "twoWayKey": "693e6b05000e68ed1ea4",
+                    "onDelete": "cascade",
+                    "side": "parent"
+                },
+                {
+                    "key": "productName",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 16,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "price",
+                    "type": "integer",
+                    "required": true,
+                    "array": false,
+                    "min": 0,
+                    "max": 9223372036854775807,
+                    "default": null
+                }
+            ],
+            "indexes": []
+        },
+        {
+            "$id": "customers_collection_629",
+            "$permissions": [
+                "create(\"users\")",
+                "read(\"users\")",
+                "update(\"users\")",
+                "delete(\"users\")"
+            ],
+            "databaseId": "milkapp_milkoo_629",
+            "name": "Customers",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "name",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 32,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "ownerId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 20,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "phone",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 16,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": []
+        },
+        {
+            "$id": "products_collection_629",
+            "$permissions": [
+                "read(\"users\")"
+            ],
+            "databaseId": "milkapp_milkoo_629",
+            "name": "Products",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "productName",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 16,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "productUnit",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 12,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "isActive",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
+                    "default": true
+                },
+                {
+                    "key": "category",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 8,
+                    "default": "other",
+                    "encrypt": false
+                }
+            ],
+            "indexes": []
+        },
+        {
+            "$id": "user_price_collection_629",
+            "$permissions": [
+                "create(\"users\")",
+                "read(\"users\")",
+                "update(\"users\")"
+            ],
+            "databaseId": "milkapp_milkoo_629",
+            "name": "User Price",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "ownerId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 20,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "productId",
+                    "type": "relationship",
+                    "required": false,
+                    "array": false,
+                    "relatedTable": "products_collection_629",
+                    "relationType": "manyToOne",
+                    "twoWay": false,
+                    "twoWayKey": "userPrice",
+                    "onDelete": "cascade",
+                    "side": "parent"
+                },
+                {
+                    "key": "price",
+                    "type": "integer",
+                    "required": true,
+                    "array": false,
+                    "min": 0,
+                    "max": 9223372036854775807,
+                    "default": null
+                }
+            ],
+            "indexes": []
+        },
+        {
+            "$id": "subscription_plans_collection_629",
+            "$permissions": [],
+            "databaseId": "milkapp_milkoo_629",
+            "name": "Subscription Plans",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "planName",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 16,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "price",
+                    "type": "integer",
+                    "required": true,
+                    "array": false,
+                    "min": 0,
+                    "max": 9223372036854775807,
+                    "default": null
+                },
+                {
+                    "key": "interval",
+                    "type": "integer",
+                    "required": false,
+                    "array": false,
+                    "min": 0,
+                    "max": 9007199254740991,
+                    "default": null
+                },
+                {
+                    "key": "max_customers",
+                    "type": "integer",
+                    "required": true,
+                    "array": false,
+                    "min": 0,
+                    "max": 9223372036854775807,
+                    "default": null
+                },
+                {
+                    "key": "max_orders",
+                    "type": "integer",
+                    "required": true,
+                    "array": false,
+                    "min": 0,
+                    "max": 9223372036854775807,
+                    "default": null
+                },
+                {
+                    "key": "isActive",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
+                    "default": false
+                }
+            ],
+            "indexes": []
+        },
+        {
+            "$id": "subscriptions_collection_629",
+            "$permissions": [],
+            "databaseId": "milkapp_milkoo_629",
+            "name": "Subscriptions",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 20,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "planId",
+                    "type": "relationship",
+                    "required": false,
+                    "array": false,
+                    "relatedTable": "subscription_plans_collection_629",
+                    "relationType": "manyToOne",
+                    "twoWay": false,
+                    "twoWayKey": "6943c9ae00301e109c3c",
+                    "onDelete": "cascade",
+                    "side": "parent"
+                },
+                {
+                    "key": "planName",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 16,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "status",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 8,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "currentPeriodEnd",
+                    "type": "datetime",
+                    "required": false,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                },
+                {
+                    "key": "subscriptionProvider",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 16,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": []
+        },
+        {
+            "$id": "entitlements_collection_629",
+            "$permissions": [],
+            "databaseId": "milkapp_milkoo_629",
+            "name": "Entitlements",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 20,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "feature",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 32,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "enabled",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
+                    "default": null
+                },
+                {
+                    "key": "limit",
+                    "type": "integer",
+                    "required": false,
+                    "array": false,
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": null
+                },
+                {
+                    "key": "type",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 8,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "sourcePlan",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 8,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": []
+        }
+    ]
+}

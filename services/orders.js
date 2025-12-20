@@ -1,4 +1,5 @@
 // services/orders.js
+
 import Constants from "expo-constants";
 import { Functions, Query } from "react-native-appwrite";
 import client, { databases } from "../lib/appwrite";
@@ -11,10 +12,20 @@ export const {
 
 const functions = new Functions(client);
 
-function assertEnv(name, v) {
-  if (!v) throw new Error(`${name} missing in expo extras`);
+/**
+ * Ensures required runtime config is present.
+ */
+function assertEnv(name, value) {
+  if (!value) {
+    console.error("[CONFIG] Missing expo extra", { name });
+    throw new Error(`${name} missing in expo extras`);
+  }
 }
 
+/**
+ * Creates an order via entitlements-guard.
+ * Server enforces limits and ownership.
+ */
 export async function createOrder({
   productId,
   productName,
@@ -31,29 +42,66 @@ export async function createOrder({
   if (!productName) throw new Error("productName required");
   if (!customerId) throw new Error("customerId required");
 
-  const res = await functions.createExecution({
-    functionId: ENTITLEMENTS_FUNCTION_ID,
-    body: JSON.stringify({
-      action: "createOrder",
-      userId: currentUserId,
-      payload: {
-        productId,
-        productName,
-        qty: Number(qty) || 1,
-        price: Number(price),
-        customerId,
-        customerName,
-      },
-    }),
+  const payload = {
+    action: "createOrder",
+    userId: currentUserId,
+    payload: {
+      productId,
+      productName,
+      qty: Number(qty) || 1,
+      price: Number(price),
+      customerId,
+      customerName,
+    },
+  };
+
+  console.info("[ORDER] Creating order", {
+    userId: currentUserId,
+    productId,
+    customerId,
+    qty: payload.payload.qty,
   });
 
-  if (res.responseStatusCode >= 400) {
-    throw new Error(JSON.parse(res.responseBody)?.error || "Failed");
+  const res = await functions.createExecution({
+    functionId: ENTITLEMENTS_FUNCTION_ID,
+    body: JSON.stringify(payload),
+  });
+
+  console.debug("[ORDER] Entitlements function response", {
+    statusCode: res.responseStatusCode,
+  });
+
+  // Function may return non-JSON on crash
+  let responseBody;
+  try {
+    responseBody = JSON.parse(res.responseBody);
+  } catch {
+    console.error("[ORDER] Invalid function response", {
+      rawBody: res.responseBody,
+    });
+    throw new Error("Invalid server response");
   }
 
-  return JSON.parse(res.responseBody);
+  if (res.responseStatusCode >= 400) {
+    console.warn("[ORDER] Order creation rejected", {
+      userId: currentUserId,
+      error: responseBody?.error,
+    });
+
+    throw new Error(responseBody?.error || "Failed");
+  }
+
+  console.info("[ORDER] Order created", {
+    userId: currentUserId,
+    orderId: responseBody?.$id,
+  });
+
+  return responseBody;
 }
 
+/**
+ * Lists orders for a user, optionally filtered by product.
+ */
 export async function listOrdersForUser({
   currentUserId,
   productId = "other",
@@ -64,6 +112,12 @@ export async function listOrdersForUser({
 
   if (!currentUserId) throw new Error("currentUserId required");
 
+  console.debug("[ORDER] Fetching orders", {
+    userId: currentUserId,
+    productId,
+    limit,
+  });
+
   const res = await databases.listDocuments({
     databaseId: APPWRITE_DATABASE,
     collectionId: ORDERS_COLLECTION,
@@ -72,6 +126,11 @@ export async function listOrdersForUser({
       Query.equal("productId", productId),
     ],
     limit,
+  });
+
+  console.info("[ORDER] Orders fetched", {
+    userId: currentUserId,
+    count: res.documents?.length ?? 0,
   });
 
   return res.documents ?? [];

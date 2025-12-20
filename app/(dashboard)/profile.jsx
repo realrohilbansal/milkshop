@@ -1,16 +1,20 @@
-// app/(dashboard)/profile.jsx
+import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet } from "react-native";
+
+import { useEntitlements } from "../../hooks/useEntitlements";
 import { useUser } from "../../hooks/useUser";
 
 import Spacer from "../../components/Spacer";
 import ThemedButton from "../../components/ThemedButton";
-import ThemedCard from "../../components/ThemedCard"; // you have this component now
+import ThemedCard from "../../components/ThemedCard";
 import ThemedText from "../../components/ThemedText";
 import ThemedView from "../../components/ThemedView";
 
 export default function Profile() {
+  const router = useRouter();
   const { user, logout } = useUser();
+  const { isPro, loading: entitlementsLoading } = useEntitlements();
 
   if (!user) {
     return (
@@ -33,7 +37,7 @@ export default function Profile() {
       <ThemedText title style={styles.title}>Your Profile</ThemedText>
       <Spacer size="lg" />
 
-      {/* Top Card */}
+      {/* USER CARD */}
       <ThemedCard style={styles.card}>
         <ThemedText title style={styles.name}>{displayName}</ThemedText>
         {user.phone ? (
@@ -46,7 +50,7 @@ export default function Profile() {
 
       <Spacer size="lg" />
 
-      {/* Details Card */}
+      {/* DETAILS CARD */}
       <ThemedCard style={styles.card}>
         <ThemedText style={styles.label}>User ID</ThemedText>
         <ThemedText style={styles.value}>{user.$id}</ThemedText>
@@ -57,17 +61,36 @@ export default function Profile() {
         <ThemedText style={styles.value}>
           {new Date(user.$createdAt).toLocaleDateString()}
         </ThemedText>
-
-        {user.prefs && Object.keys(user.prefs).length > 0 && (
-          <>
-            <Spacer />
-            <ThemedText style={styles.label}>Preferences</ThemedText>
-            <ThemedText style={styles.value}>{JSON.stringify(user.prefs)}</ThemedText>
-          </>
-        )}
       </ThemedCard>
 
-      <Spacer size="xl" />
+      <Spacer size="lg" />
+
+      {/* UPGRADE (FREE USERS ONLY) */}
+      {!entitlementsLoading && !isPro && (
+        <>
+          <ThemedCard style={styles.card}>
+            <ThemedText style={{ fontWeight: "700", fontSize: 16 }}>
+              Free Plan
+            </ThemedText>
+
+            <Spacer />
+
+            <ThemedText>
+              You’re currently on the Free plan with limited capacity.
+            </ThemedText>
+
+            <Spacer />
+
+            <ThemedButton
+              onPress={() => router.push("/upgrade")}
+            >
+              Upgrade to Pro
+            </ThemedButton>
+          </ThemedCard>
+
+          <Spacer size="lg" />
+        </>
+      )}
 
       <ThemedButton onPress={logout} style={styles.logout}>
         Logout

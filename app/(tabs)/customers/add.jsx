@@ -1,3 +1,5 @@
+// app/(tabs)/customers/add.jsx
+
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Alert } from "react-native";
@@ -10,16 +12,22 @@ import ThemedView from "../../../components/ThemedView";
 import { useUser } from "../../../hooks/useUser";
 import { createCustomer } from "../../../services/customers";
 
+/**
+ * Lightweight phone validation.
+ * Accepts empty value (optional field).
+ */
 function isValidPhone(p) {
   if (!p) return true;
+
   const cleaned = p.replace(/\s+/g, "");
+
   if (cleaned.startsWith("+")) {
     const digits = cleaned.slice(1).replace(/\D/g, "");
     return digits.length >= 8 && digits.length <= 15;
-  } else {
-    const digits = cleaned.replace(/\D/g, "");
-    return digits.length === 10;
   }
+
+  const digits = cleaned.replace(/\D/g, "");
+  return digits.length === 10;
 }
 
 export default function AddCustomer() {
@@ -33,7 +41,11 @@ export default function AddCustomer() {
   async function save() {
     const currentUserId = getUserId();
 
+    console.info("[UI][CUSTOMER] Save initiated");
+
     if (!currentUserId) {
+      console.warn("[UI][CUSTOMER] Save blocked: not authenticated");
+
       Alert.alert(
         "Authentication required",
         "Please sign in before adding customers."
@@ -42,11 +54,17 @@ export default function AddCustomer() {
     }
 
     if (!name.trim()) {
+      console.warn("[UI][CUSTOMER] Validation failed: name missing");
+
       Alert.alert("Validation", "Customer name is required");
       return;
     }
 
     if (!isValidPhone(phone.trim())) {
+      console.warn("[UI][CUSTOMER] Validation failed: invalid phone", {
+        phone,
+      });
+
       Alert.alert(
         "Validation",
         "Phone number looks invalid. Use +<countrycode><number> or 10 digits."
@@ -56,6 +74,11 @@ export default function AddCustomer() {
 
     setLoading(true);
 
+    console.info("[UI][CUSTOMER] Creating customer", {
+      userId: currentUserId,
+      name: name.trim(),
+    });
+
     try {
       await createCustomer({
         name: name.trim(),
@@ -63,24 +86,43 @@ export default function AddCustomer() {
         currentUserId,
       });
 
+      console.info("[UI][CUSTOMER] Customer created successfully", {
+        userId: currentUserId,
+      });
+
       Alert.alert("Success", "Customer created");
       router.back();
     } catch (err) {
-      console.error("createCustomer error:", err);
+      console.warn("[UI][CUSTOMER] Save blocked", {
+        reason: err?.message,
+      });
 
-      if (err.message === "LIMIT_REACHED") {
+      if (err?.message === "LIMIT_REACHED") {
+        // NOT an error — business constraint
         Alert.alert(
-          "Limit reached",
-          "You’ve reached the maximum number of customers allowed on your current plan. Upgrade to add more."
+          "Upgrade required",
+          "You’ve reached the customer limit for your current plan.\n\nUpgrade to add more customers.",
+          [
+            { text: "Not now", style: "cancel" },
+            {
+              text: "Upgrade",
+              onPress: () => {
+                router.push("/(modals)/upgrade"); 
+                // or wherever you place the upgrade screen
+              },
+            },
+          ]
         );
       } else {
+        // Real error
         Alert.alert(
-          "Error",
+          "Something went wrong",
           err?.message || "Failed to save customer"
         );
       }
     } finally {
       setLoading(false);
+      console.debug("[UI][CUSTOMER] Save flow completed");
     }
   }
 

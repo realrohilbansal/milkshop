@@ -1,0 +1,16 @@
+{
+  "name": "entitlements-guard",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+  "node-appwrite": "^14.0.0"
+},
+  "scripts": {
+    "build": "echo \"no build step\""
+  }
+}

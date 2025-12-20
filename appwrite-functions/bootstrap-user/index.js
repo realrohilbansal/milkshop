@@ -1,14 +1,26 @@
+// appwrite-functions/bootstrap-user/index.js
 import { Client, Databases, Functions, Query } from "node-appwrite";
 
-export const { APPWRITE_ENDPOINT, APPWRITE_PROJECT, APPWRITE_API_KEY,
-    APPWRITE_DATABASE, CUSTOMERS_COLLECTION,
-    ORDERS_COLLECTION, ENTITLEMENTS_COLLECTION,
-    SUBSCRIPTIONS_COLLECTION, SUBSCRIPTION_PLANS_COLLECTION,
-    APPLY_ENTITLEMENTS_FUNCTION_ID
- } = Constants.expoConfig?.extra ?? {};
+export const {
+  APPWRITE_ENDPOINT,
+  APPWRITE_PROJECT,
+  APPWRITE_API_KEY,
+  APPWRITE_DATABASE,
+  SUBSCRIPTIONS_COLLECTION,
+  APPLY_ENTITLEMENTS_FUNCTION_ID,
+} = process.env;
 
 export default async ({ req, res, log }) => {
+  const requestStart = Date.now();
+
   try {
+    log("[INIT] User bootstrap invoked");
+
+    // ---- Validate config ----
+    if (!APPWRITE_ENDPOINT || !APPWRITE_PROJECT || !APPWRITE_API_KEY) {
+      throw new Error("APPWRITE_CONFIG_MISSING");
+    }
+
     const client = new Client()
       .setEndpoint(APPWRITE_ENDPOINT)
       .setProject(APPWRITE_PROJECT)
@@ -17,45 +29,88 @@ export default async ({ req, res, log }) => {
     const databases = new Databases(client);
     const functions = new Functions(client);
 
-    const { userId } = JSON.parse(req.body || "{}");
-    if (!userId) throw new Error("userId required");
+    // ---- Parse & validate request ----
+    const userId = req.headers["x-appwrite-user-id"];
 
-    // 1️⃣ Check if subscription already exists
+    log({ stage: "REQUEST", userId });
+
+    if (!userId) {
+      throw new Error("userId required");
+    }
+
+    // ---- Check if user already bootstrapped ----
+    log({ stage: "CHECK_EXISTING_SUBSCRIPTION", userId });
+
     const existing = await databases.listDocuments(
       APPWRITE_DATABASE,
       SUBSCRIPTIONS_COLLECTION,
-      [Query.equal("user_id", userId)]
+      [Query.equal("userId", userId)]
     );
 
     if (existing.documents.length > 0) {
-      // Already bootstrapped → safe exit
+      log({
+        stage: "ALREADY_INITIALIZED",
+        userId,
+        subscriptionCount: existing.documents.length,
+        durationMs: Date.now() - requestStart,
+      });
+
+      // Idempotent-safe early exit
       return res.json({ status: "already_initialized" });
     }
 
-    // 2️⃣ Create FREE subscription
-    await databases.createDocument(
+    // ---- Create FREE subscription ----
+    log({ stage: "CREATE_FREE_SUBSCRIPTION", userId });
+
+    const subscription = await databases.createDocument(
       APPWRITE_DATABASE,
       SUBSCRIPTIONS_COLLECTION,
       "unique()",
       {
-        user_id: userId,
-        plan_key: "free",
+        userId: userId,
+        planName: "free",
         status: "active",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       }
     );
 
-    // 3️⃣ Apply entitlements
-    await functions.createExecution(
+    log({
+      stage: "SUBSCRIPTION_CREATED",
+      userId,
+      subscriptionId: subscription.$id,
+      planName: "free",
+    });
+
+    // ---- Apply entitlements asynchronously ----
+    log({
+      stage: "TRIGGER_APPLY_ENTITLEMENTS",
+      userId,
+      functionId: APPLY_ENTITLEMENTS_FUNCTION_ID,
+    });
+
+    const execution = await functions.createExecution(
       APPLY_ENTITLEMENTS_FUNCTION_ID,
       JSON.stringify({ userId }),
-      false
+      false // async execution
     );
 
+
+    log({
+      stage: "ENTITLEMENTS_TRIGGERED",
+      userId,
+      executionId: execution.$id,
+      durationMs: Date.now() - requestStart,
+    });
+
     return res.json({ status: "initialized" });
+
   } catch (err) {
-    log(err.message);
+    log({
+      stage: "ERROR",
+      message: err.message,
+      stack: err.stack,
+      durationMs: Date.now() - requestStart,
+    });
+
     return res.json({ error: err.message }, 400);
   }
 };
