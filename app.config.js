@@ -38,6 +38,9 @@ export default {
     },
     android: {
       package: "dev.milkshop.milkooapp",
+      permissions: [
+        "com.android.vending.BILLING"
+      ],
       adaptiveIcon: {
         backgroundColor: "#E6F4FE",
         foregroundImage: "./assets/images/android-icon-foreground.png",
